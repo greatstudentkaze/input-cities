@@ -30,14 +30,14 @@ const getAllCities = data => {
   });
 
   return allCities;
-}
+};
 
 const getFoundCities = (cities, searchString) => {
   return cities.filter(city => {
     const cityName = city.name.toLowerCase();
     return cityName.indexOf(searchString.toLowerCase()) === 0;
   });
-}
+};
 
 const addLine = (country, { name, count }, template, target) => {
   const line = template.content.cloneNode(true),
@@ -104,69 +104,7 @@ const getCitiesData = async (url, locale = 'RU') => {
     addCountryBlock(country, lineTemplate, defaultList.querySelector('.dropdown-lists__col'));
   });
 
-  dropdown.addEventListener('click', (evt) => {
-    const target = evt.target;
-
-    if (!target.closest('.dropdown-lists__countryBlock')) return;
-
-    const targetCountry = target.closest('.dropdown-lists__countryBlock').dataset.country;
-
-    if (target.closest('.dropdown-lists__total-line')) {
-      citySelect.value = targetCountry;
-
-      // Если клик по стране из списка стран с топ3 городами, то в список со всеми городами выбранной страны добавляем инфу
-      if (target.closest('.dropdown-lists__list--default')) {
-        selectList.style.display = 'block';
-
-        data[locale].forEach(item => {
-          if (item.country === targetCountry) {
-            addCountryBlock(item, lineTemplate, selectList.querySelector('.dropdown-lists__col'));
-          }
-        });
-      }
-
-      // Если клик по стране из списка со всеми городами, то закрываем его
-      if (target.closest('.dropdown-lists__list--select')) {
-        selectList.style.display = '';
-      }
-
-    } else if (target.closest('.dropdown-lists__line')) {
-      const targetCountry = target.closest('.dropdown-lists__line').dataset.country,
-        targetCity = target.closest('.dropdown-lists__line').dataset.city;
-
-      const cityData = data[locale]
-        .find(item => item.country === targetCountry)
-        .cities.find(city => city.name === targetCity);
-
-      citySelect.value = targetCity;
-      linkBtn.href = cityData.link;
-    }
-
-    closeBtn.style.display = 'block';
-  });
-
-  const allCities = getAllCities(data[locale]);
-
-  citySelect.addEventListener('input', evt => {
-    const target = evt.target;
-
-    autocompleteList.style.display = 'block';
-    defaultList.style.display = 'none';
-    selectList.style.display = '';
-    closeBtn.style.display = 'block';
-    linkBtn.removeAttribute('href');
-
-    if (target.value === '') {
-      defaultList.style.display = '';
-      autocompleteList.style.display = '';
-      closeBtn.style.display = '';
-    }
-
-    const foundCities = getFoundCities(allCities, target.value);
-    addCountryBlock({ cities: foundCities }, lineTemplate, autocompleteList.querySelector('.dropdown-lists__col'));
-  });
-
-  return data;
+  return data[locale];
 };
 
 citySelect.addEventListener('focus', () => {
@@ -185,4 +123,66 @@ closeBtn.addEventListener('click', () => {
 });
 
 getCitiesData('db_cities.json')
+  .then(data => {
+    const allCities = getAllCities(data);
+
+    dropdown.addEventListener('click', evt => {
+      const target = evt.target;
+
+      if (!target.closest('.dropdown-lists__countryBlock')) return;
+
+      const targetCountry = target.closest('.dropdown-lists__countryBlock').dataset.country;
+
+      if (target.closest('.dropdown-lists__total-line')) {
+        citySelect.value = targetCountry;
+
+        // Если клик по стране из списка стран с топ3 городами, то в список со всеми городами выбранной страны добавляем инфу
+        if (target.closest('.dropdown-lists__list--default')) {
+          selectList.style.display = 'block';
+
+          data.forEach(item => {
+            if (item.country === targetCountry) {
+              addCountryBlock(item, lineTemplate, selectList.querySelector('.dropdown-lists__col'));
+            }
+          });
+        }
+
+        // Если клик по стране из списка со всеми городами, то закрываем его
+        if (target.closest('.dropdown-lists__list--select')) {
+          selectList.style.display = '';
+        }
+
+      } else if (target.closest('.dropdown-lists__line')) {
+        const targetCountry = target.closest('.dropdown-lists__line').dataset.country,
+          targetCity = target.closest('.dropdown-lists__line').dataset.city;
+
+        const cityData = data.find(item => item.country === targetCountry)
+          .cities.find(city => city.name === targetCity);
+
+        citySelect.value = targetCity;
+        linkBtn.href = cityData.link;
+      }
+
+      closeBtn.style.display = 'block';
+    });
+
+    citySelect.addEventListener('input', evt => {
+      const target = evt.target;
+
+      autocompleteList.style.display = 'block';
+      defaultList.style.display = 'none';
+      selectList.style.display = '';
+      closeBtn.style.display = 'block';
+      linkBtn.removeAttribute('href');
+
+      if (target.value === '') {
+        defaultList.style.display = '';
+        autocompleteList.style.display = '';
+        closeBtn.style.display = '';
+      }
+
+      const foundCities = getFoundCities(allCities, target.value);
+      addCountryBlock({ cities: foundCities }, lineTemplate, autocompleteList.querySelector('.dropdown-lists__col'));
+    });
+  })
   .catch(err => console.error(err));
