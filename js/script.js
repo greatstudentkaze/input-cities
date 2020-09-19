@@ -20,7 +20,17 @@ const getTop3Cities = cities => {
   return cities.slice(0, 3);
 };
 
-const getAllCities = data => data.reduce((cities, country) => cities.concat(country.cities), []);
+const getAllCities = data => {
+  let allCities = [];
+
+  data.forEach(({ country, cities }) => {
+    cities.forEach(({ name }) => {
+      allCities = [...allCities, { name: name, country: country }];
+    });
+  });
+
+  return allCities;
+}
 
 const getFoundCities = (cities, searchString) => {
   return cities.filter(city => {
@@ -29,11 +39,12 @@ const getFoundCities = (cities, searchString) => {
   });
 }
 
-const addLine = ({ name, count }, template, target) => {
+const addLine = (country, { name, count }, template, target) => {
   const line = template.content.cloneNode(true),
     lineCity = line.querySelector('.dropdown-lists__city'),
     lineCount = line.querySelector('.dropdown-lists__count');
 
+  lineCity.parentNode.dataset.country = country;
   lineCity.parentNode.dataset.city = name;
   lineCity.textContent = name;
   lineCount.textContent = count;
@@ -69,7 +80,8 @@ const addCountryBlock = ({ country, count, cities }, template, target) => {
 
   if (cities.length > 0) {
     cities.forEach(city => {
-      addLine(city, lineTemplate, countryBlock);
+      country = country ? country : city.country;
+      addLine(country, city, lineTemplate, countryBlock);
     });
   } else {
     const errorLine = document.createElement('div');
@@ -119,13 +131,14 @@ const getCitiesData = async (url, locale = 'RU') => {
       }
 
     } else if (target.closest('.dropdown-lists__line')) {
-      const targetCity = target.closest('.dropdown-lists__line').dataset.city;
-      citySelect.value = targetCity;
+      const targetCountry = target.closest('.dropdown-lists__line').dataset.country,
+        targetCity = target.closest('.dropdown-lists__line').dataset.city;
 
       const cityData = data[locale]
         .find(item => item.country === targetCountry)
         .cities.find(city => city.name === targetCity);
 
+      citySelect.value = targetCity;
       linkBtn.href = cityData.link;
     }
 
