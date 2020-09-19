@@ -18,7 +18,7 @@ body {
         background: -webkit-linear-gradient(to bottom, #00416A, #E4E5E6);
         background: linear-gradient(to bottom, #00416A, #E4E5E6);
         .input-cities {
-            width: 430px;
+            width: 600px;
             height: 50px;
             margin: 200px auto 0 auto;
             letter-spacing: 0.6px;
@@ -70,7 +70,7 @@ body {
                 left: 15px;
                 color: #fff;
             }
-        }    
+        }
     }
 }
 .button {
@@ -116,7 +116,7 @@ body {
         }
         &__country{
            font-weight: 700;
-           font-size: 18px; 
+           font-size: 18px;
         }
         &__count{
             font-style: italic;
