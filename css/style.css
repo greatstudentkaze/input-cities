@@ -31,7 +31,25 @@ body {
         width: 100%;
         height: 100%;
         font-size: 18px;
-        color: #00416A; }
+        color: #ffffff; }
+        body .main .input-cities #select-cities::-webkit-input-placeholder {
+          color: #ffffff; }
+        body .main .input-cities #select-cities:-moz-placeholder {
+          color: #ffffff; }
+        body .main .input-cities #select-cities::-moz-placeholder {
+          color: #ffffff; }
+        body .main .input-cities #select-cities:-ms-input-placeholder {
+          color: #ffffff; }
+        body .main .input-cities #select-cities:focus {
+          color: #00416A; }
+          body .main .input-cities #select-cities:focus::-webkit-input-placeholder {
+            color: #00416A; }
+          body .main .input-cities #select-cities:focus:-moz-placeholder {
+            color: #00416A; }
+          body .main .input-cities #select-cities:focus::-moz-placeholder {
+            color: #00416A; }
+          body .main .input-cities #select-cities:focus:-ms-input-placeholder {
+            color: #00416A; }
       body .main .input-cities #select-cities:focus ~ .label {
         top: -25px;
         left: 0;
@@ -62,6 +80,7 @@ body {
         position: absolute;
         top: 15px;
         left: 15px;
+        display: none;
         color: #fff; }
 
 .button {
