@@ -117,6 +117,8 @@ const getCitiesData = async (url, locale = 'RU') => {
     } else if (target.closest('.dropdown-lists__line')) {
       citySelect.value = target.closest('.dropdown-lists__line').dataset.city;
     } else return;
+
+    closeBtn.style.display = 'block';
   });
 
   const allCities = getAllCities(data[locale]);
@@ -127,10 +129,12 @@ const getCitiesData = async (url, locale = 'RU') => {
     autocompleteList.style.display = 'block';
     defaultList.style.display = 'none';
     selectList.style.display = '';
+    closeBtn.style.display = 'block';
 
     if (target.value === '') {
       defaultList.style.display = '';
       autocompleteList.style.display = '';
+      closeBtn.style.display = '';
     }
 
     const foundCities = getFoundCities(allCities, target.value);
@@ -142,6 +146,15 @@ const getCitiesData = async (url, locale = 'RU') => {
 
 citySelect.addEventListener('focus', () => {
   defaultList.style.display = '';
+  autocompleteList.style.display = '';
+});
+
+closeBtn.addEventListener('click', () => {
+  citySelect.value = '';
+  closeBtn.style.display = '';
+
+  defaultList.style.display = 'none';
+  selectList.style.display = '';
   autocompleteList.style.display = '';
 });
 
