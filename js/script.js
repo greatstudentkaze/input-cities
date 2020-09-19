@@ -2,6 +2,7 @@
 
 const citySelect = document.getElementById('select-cities'),
   closeBtn = document.querySelector('.close-button'),
+  linkBtn = document.querySelector('.input-cities .button'),
   dropdown = document.querySelector('.dropdown'),
   defaultList = dropdown.querySelector('.dropdown-lists__list--default'),
   selectList = dropdown.querySelector('.dropdown-lists__list--select'),
@@ -45,7 +46,6 @@ const addTotalLine = ({ country, count }, template, target) => {
     lineCountry = line.querySelector('.dropdown-lists__country'),
     lineCount = line.querySelector('.dropdown-lists__count');
 
-  lineCountry.parentNode.dataset.country = country;
   lineCountry.textContent = country;
   lineCount.textContent = count;
 
@@ -55,6 +55,7 @@ const addTotalLine = ({ country, count }, template, target) => {
 const addCountryBlock = ({ country, count, cities }, template, target) => {
   const countryBlock = document.createElement('div');
   countryBlock.classList.add('dropdown-lists__countryBlock');
+  countryBlock.dataset.country = country;
 
   if (country && count) {
     addTotalLine({ country, count }, totalLineTemplate, countryBlock);
@@ -94,8 +95,11 @@ const getCitiesData = async (url, locale = 'RU') => {
   dropdown.addEventListener('click', (evt) => {
     const target = evt.target;
 
+    if (!target.closest('.dropdown-lists__countryBlock')) return;
+
+    const targetCountry = target.closest('.dropdown-lists__countryBlock').dataset.country;
+
     if (target.closest('.dropdown-lists__total-line')) {
-      const targetCountry = target.closest('.dropdown-lists__total-line').dataset.country;
       citySelect.value = targetCountry;
 
       // Если клик по стране из списка стран с топ3 городами, то в список со всеми городами выбранной страны добавляем инфу
@@ -115,8 +119,15 @@ const getCitiesData = async (url, locale = 'RU') => {
       }
 
     } else if (target.closest('.dropdown-lists__line')) {
-      citySelect.value = target.closest('.dropdown-lists__line').dataset.city;
-    } else return;
+      const targetCity = target.closest('.dropdown-lists__line').dataset.city;
+      citySelect.value = targetCity;
+
+      const cityData = data[locale]
+        .find(item => item.country === targetCountry)
+        .cities.find(city => city.name === targetCity);
+
+      linkBtn.href = cityData.link;
+    }
 
     closeBtn.style.display = 'block';
   });
@@ -130,6 +141,7 @@ const getCitiesData = async (url, locale = 'RU') => {
     defaultList.style.display = 'none';
     selectList.style.display = '';
     closeBtn.style.display = 'block';
+    linkBtn.removeAttribute('href');
 
     if (target.value === '') {
       defaultList.style.display = '';
@@ -152,6 +164,7 @@ citySelect.addEventListener('focus', () => {
 closeBtn.addEventListener('click', () => {
   citySelect.value = '';
   closeBtn.style.display = '';
+  linkBtn.removeAttribute('href');
 
   defaultList.style.display = 'none';
   selectList.style.display = '';
