@@ -1,6 +1,7 @@
 'use strict';
 
 const citySelect = document.getElementById('select-cities'),
+  closeBtn = document.querySelector('.close-button'),
   dropdown = document.querySelector('.dropdown'),
   defaultList = dropdown.querySelector('.dropdown-lists__list--default'),
   selectList = dropdown.querySelector('.dropdown-lists__list--select'),
@@ -32,6 +33,7 @@ const addLine = ({ name, count }, template, target) => {
     lineCity = line.querySelector('.dropdown-lists__city'),
     lineCount = line.querySelector('.dropdown-lists__count');
 
+  lineCity.parentNode.dataset.city = name;
   lineCity.textContent = name;
   lineCount.textContent = count;
 
@@ -43,6 +45,7 @@ const addTotalLine = ({ country, count }, template, target) => {
     lineCountry = line.querySelector('.dropdown-lists__country'),
     lineCount = line.querySelector('.dropdown-lists__count');
 
+  lineCountry.parentNode.dataset.country = country;
   lineCountry.textContent = country;
   lineCount.textContent = count;
 
@@ -52,7 +55,6 @@ const addTotalLine = ({ country, count }, template, target) => {
 const addCountryBlock = ({ country, count, cities }, template, target) => {
   const countryBlock = document.createElement('div');
   countryBlock.classList.add('dropdown-lists__countryBlock');
-  countryBlock.dataset.country = country;
 
   if (country && count) {
     addTotalLine({ country, count }, totalLineTemplate, countryBlock);
@@ -70,7 +72,7 @@ const addCountryBlock = ({ country, count, cities }, template, target) => {
     });
   } else {
     const errorLine = document.createElement('div');
-    errorLine.className = 'dropdown-lists__line dropdown-lists__line dropdown-lists__line--error';
+    errorLine.className = 'dropdown-lists__line dropdown-lists__line--error';
     errorLine.textContent = 'Ничего не найдено :(';
     countryBlock.append(errorLine);
   }
@@ -92,25 +94,29 @@ const getCitiesData = async (url, locale = 'RU') => {
   dropdown.addEventListener('click', (evt) => {
     const target = evt.target;
 
-    if (!target.closest('.dropdown-lists__total-line')) return;
+    if (target.closest('.dropdown-lists__total-line')) {
+      const targetCountry = target.closest('.dropdown-lists__total-line').dataset.country;
+      citySelect.value = targetCountry;
 
-    selectList.style.display = 'block';
+      // Если клик по стране из списка стран с топ3 городами, то в список со всеми городами выбранной страны добавляем инфу
+      if (target.closest('.dropdown-lists__list--default')) {
+        selectList.style.display = 'block';
 
-    // Если клик по стране из списка стран с топ3 городами, то в список со всеми городами выбранной страны добавляем инфу
-    if (target.closest('.dropdown-lists__list--default')) {
-      data[locale].forEach(item => {
-        const targetCountry = target.closest('.dropdown-lists__countryBlock').dataset.country;
+        data[locale].forEach(item => {
+          if (item.country === targetCountry) {
+            addCountryBlock(item, lineTemplate, selectList.querySelector('.dropdown-lists__col'));
+          }
+        });
+      }
 
-        if (item.country === targetCountry) {
-          addCountryBlock(item, lineTemplate, selectList.querySelector('.dropdown-lists__col'));
-        }
-      });
-    }
+      // Если клик по стране из списка со всеми городами, то закрываем его
+      if (target.closest('.dropdown-lists__list--select')) {
+        selectList.style.display = '';
+      }
 
-    // Если клик по стране из списка со всеми городами, то закрываем его
-    if (target.closest('.dropdown-lists__list--select')) {
-      selectList.style.display = '';
-    }
+    } else if (target.closest('.dropdown-lists__line')) {
+      citySelect.value = target.closest('.dropdown-lists__line').dataset.city;
+    } else return;
   });
 
   const allCities = getAllCities(data[locale]);
@@ -137,12 +143,6 @@ const getCitiesData = async (url, locale = 'RU') => {
 citySelect.addEventListener('focus', () => {
   defaultList.style.display = '';
   autocompleteList.style.display = '';
-});
-
-citySelect.addEventListener('blur', evt => {
-  const target = evt.target;
-
-  target.value = '';
 });
 
 getCitiesData('db_cities.json')
