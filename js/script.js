@@ -40,8 +40,8 @@ const getAllCities = data => {
   let allCities = [];
 
   data.forEach(({ country, cities }) => {
-    cities.forEach(({ name }) => {
-      allCities = [...allCities, { name: name, country: country }];
+    cities.forEach(({ name, count }) => {
+      allCities = [...allCities, { name, count, country }];
     });
   });
 
@@ -53,6 +53,27 @@ const getFoundCities = (cities, searchString) => {
     const cityName = city.name.toLowerCase();
     return cityName.indexOf(searchString.toLowerCase()) === 0;
   });
+};
+
+const highlightLetters = (letters) => {
+  const citiesLines = autocompleteList.querySelectorAll('.dropdown-lists__city');
+
+  citiesLines.forEach(cityLine => {
+    if (cityLine.classList.contains('dropdown-lists__line--error')) return;
+
+    const cityName = cityLine.textContent,
+      regExp = new RegExp(`${letters}`, 'gi');
+
+    cityLine.innerHTML = cityName.replace(regExp, match => `<b>${match}</b>`);
+  });
+};
+
+const renderFoundCities = (allCities, searchString) => {
+  const foundCities = getFoundCities(allCities, searchString);
+
+  addCountryBlock({ cities: foundCities }, lineTemplate, autocompleteList.querySelector('.dropdown-lists__col'));
+
+  highlightLetters(searchString);
 };
 
 const addLine = (country, { name, count }, template, target) => {
@@ -82,9 +103,9 @@ const addTotalLine = ({ country, count }, template, target) => {
 const addCountryBlock = ({ country, count, cities }, template, target) => {
   const countryBlock = document.createElement('div');
   countryBlock.classList.add('dropdown-lists__countryBlock');
-  countryBlock.dataset.country = country;
 
   if (country && count) {
+    countryBlock.dataset.country = country;
     addTotalLine({ country, count }, totalLineTemplate, countryBlock);
   }
 
@@ -96,8 +117,8 @@ const addCountryBlock = ({ country, count, cities }, template, target) => {
 
   if (cities.length > 0) {
     cities.forEach(city => {
-      country = country ? country : city.country;
-      addLine(country, city, lineTemplate, countryBlock);
+      const countryTemp = country ? country : city.country;
+      addLine(countryTemp, city, lineTemplate, countryBlock);
     });
   } else {
     const errorLine = document.createElement('div');
@@ -164,6 +185,7 @@ getCitiesData('db_cities.json')
 
       if (target.closest('.dropdown-lists__total-line')) {
         citySelect.value = targetCountry;
+        linkBtn.removeAttribute('href');
 
         // Если клик по стране из списка стран с топ3 городами, то в список со всеми городами выбранной страны добавляем инфу
         if (target.closest('.dropdown-lists__list--default')) {
@@ -206,6 +228,10 @@ getCitiesData('db_cities.json')
 
         citySelect.value = targetCity;
         linkBtn.href = cityData.link;
+
+        if (target.closest('.dropdown-lists__list--autocomplete')) {
+          renderFoundCities(allCities, citySelect.value);
+        }
       }
 
       closeBtn.style.display = 'block';
@@ -227,8 +253,7 @@ getCitiesData('db_cities.json')
         closeBtn.style.display = '';
       }
 
-      const foundCities = getFoundCities(allCities, target.value);
-      addCountryBlock({ cities: foundCities }, lineTemplate, autocompleteList.querySelector('.dropdown-lists__col'));
+      renderFoundCities(allCities, target.value);
     });
   })
   .catch(err => console.error(err));
