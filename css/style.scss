@@ -151,6 +151,8 @@ body {
   background: #fff;
   max-height: 300px;
   overflow: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 
   &-lists {
     width: 100%;
@@ -158,9 +160,12 @@ body {
 
     &__list {
       width: 100%;
+      transition: 0.3s;
 
       &--select {
         display: none;
+        width: 0;
+        transform: translateX(100%);
       }
 
       &--autocomplete {

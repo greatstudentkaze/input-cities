@@ -11,6 +11,23 @@ const citySelect = document.getElementById('select-cities'),
   totalLineTemplate = document.querySelector('.js-total-line'),
   preloaderTemplate = document.querySelector('.js-preloader');
 
+const animate = ({ draw, duration }) => {
+  const start = performance.now();
+
+  requestAnimationFrame(function animate(time) {
+    let timeFraction = (time - start) / duration;
+    if (timeFraction > 1) timeFraction = 1;
+
+    const progress = timeFraction;
+
+    draw(progress);
+
+    if (timeFraction < 1) {
+      requestAnimationFrame(animate);
+    }
+  });
+};
+
 const sortByCount = cities => cities.sort((a, b) => b.count - a.count);
 
 const getTop3Cities = cities => {
@@ -130,7 +147,7 @@ closeBtn.addEventListener('click', () => {
   linkBtn.removeAttribute('href');
 
   defaultList.style.display = 'none';
-  selectList.style.display = '';
+  selectList.style = '';
   autocompleteList.style.display = '';
 });
 
@@ -150,7 +167,16 @@ getCitiesData('db_cities.json')
 
         // Если клик по стране из списка стран с топ3 городами, то в список со всеми городами выбранной страны добавляем инфу
         if (target.closest('.dropdown-lists__list--default')) {
+          animate({
+            duration: 150,
+            draw(progress) {
+              selectList.style.transform = `translateX(${100 - progress * 100}%)`;
+              selectList.style.width = `${progress * 100}%`;
+              selectList.style.opacity = `${progress * 100}%`;
+            }
+          });
           selectList.style.display = 'block';
+          dropdown.scrollTop = 0;
 
           data.forEach(item => {
             if (item.country === targetCountry) {
@@ -161,7 +187,14 @@ getCitiesData('db_cities.json')
 
         // Если клик по стране из списка со всеми городами, то закрываем его
         if (target.closest('.dropdown-lists__list--select')) {
-          selectList.style.display = '';
+          animate({
+            duration: 180,
+            draw(progress) {
+              selectList.style.transform = `translateX(${progress * 100}%)`;
+              selectList.style.width = `${100 - progress * 100}%`;
+              selectList.style.opacity = `${100 - progress * 100}%`;
+            }
+          });
         }
 
       } else if (target.closest('.dropdown-lists__line')) {
@@ -188,7 +221,8 @@ getCitiesData('db_cities.json')
       linkBtn.removeAttribute('href');
 
       if (target.value === '') {
-        defaultList.style.display = '';
+        defaultList.style = '';
+        selectList.style = '';
         autocompleteList.style.display = '';
         closeBtn.style.display = '';
       }

@@ -230,14 +230,19 @@ body {
   width: 100%;
   background: #fff;
   max-height: 300px;
-  overflow: auto; }
+  overflow: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth; }
   .dropdown-lists {
     width: 100%;
     display: flex; }
     .dropdown-lists__list {
-      width: 100%; }
+      width: 100%;
+      transition: 0.3s; }
       .dropdown-lists__list--select {
-        display: none; }
+        display: none;
+        width: 0;
+        transform: translateX(100%); }
       .dropdown-lists__list--autocomplete {
         display: none; }
     .dropdown-lists__total-line, .dropdown-lists__line {
