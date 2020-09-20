@@ -8,9 +8,8 @@ const citySelect = document.getElementById('select-cities'),
   selectList = dropdown.querySelector('.dropdown-lists__list--select'),
   autocompleteList = dropdown.querySelector('.dropdown-lists__list--autocomplete'),
   lineTemplate = document.querySelector('.js-line'),
-  totalLineTemplate = document.querySelector('.js-total-line');
-
-defaultList.style.display = 'none';
+  totalLineTemplate = document.querySelector('.js-total-line'),
+  preloaderTemplate = document.querySelector('.js-preloader');
 
 const sortByCount = cities => cities.sort((a, b) => b.count - a.count);
 
@@ -93,7 +92,18 @@ const addCountryBlock = ({ country, count, cities }, template, target) => {
   target.append(countryBlock);
 };
 
+const addPreloader = ((template, target) => {
+  const preloader = template.content.cloneNode(true),
+    preloaderClassName = preloader.children[0].className;
+
+  target.prepend(preloader);
+
+  return target.querySelector('.'+ preloaderClassName);
+});
+
 const getCitiesData = async (url, locale = 'RU') => {
+  const dropdownPreloader = addPreloader(preloaderTemplate, dropdown);
+
   const response = await fetch(url);
 
   if (!response.ok) throw new Error(response.status);
@@ -103,6 +113,8 @@ const getCitiesData = async (url, locale = 'RU') => {
   data[locale].forEach(country => {
     addCountryBlock(country, lineTemplate, defaultList.querySelector('.dropdown-lists__col'));
   });
+
+  dropdownPreloader.remove();
 
   return data[locale];
 };
