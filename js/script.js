@@ -55,7 +55,7 @@ const getFoundCities = (cities, searchString) => {
   });
 };
 
-const highlightLetters = (letters) => {
+const highlightLetters = letters => {
   const citiesLines = autocompleteList.querySelectorAll('.dropdown-lists__city');
 
   citiesLines.forEach(cityLine => {
@@ -130,14 +130,39 @@ const addCountryBlock = ({ country, count, cities }, template, target) => {
   target.append(countryBlock);
 };
 
-const addPreloader = ((template, target) => {
+const addPreloader = (template, target) => {
   const preloader = template.content.cloneNode(true),
     preloaderClassName = preloader.children[0].className;
 
   target.prepend(preloader);
 
   return target.querySelector('.'+ preloaderClassName);
-});
+};
+
+const unshiftHomeland = (data, locale) => {
+  const localData = data[locale];
+
+  let country;
+  switch (locale) {
+    case 'RU':
+      country = 'Россия';
+      break;
+    case 'EN':
+      country = 'United Kingdom';
+      break;
+    case 'DE':
+      country = 'Deutschland';
+      break;
+  }
+
+  const indexOfCountry = localData.findIndex(item => item.country === country);
+
+  const countryItem = localData[indexOfCountry];
+  localData.splice(indexOfCountry, 1);
+  localData.splice(0, 0, countryItem);
+
+  return localData;
+};
 
 const getCitiesData = async (url, locale = 'RU') => {
   const dropdownPreloader = addPreloader(preloaderTemplate, dropdown);
@@ -148,13 +173,15 @@ const getCitiesData = async (url, locale = 'RU') => {
 
   const data = await response.json();
 
-  data[locale].forEach(country => {
+  const localData = unshiftHomeland(data, locale);
+
+  localData.forEach(country => {
     addCountryBlock(country, lineTemplate, defaultList.querySelector('.dropdown-lists__col'));
   });
 
   dropdownPreloader.remove();
 
-  return data[locale];
+  return localData;
 };
 
 citySelect.addEventListener('focus', () => {
