@@ -172,7 +172,13 @@ closeBtn.addEventListener('click', () => {
   autocompleteList.style.display = '';
 });
 
-getCitiesData('db_cities.json')
+let locale = prompt('Введите локаль (RU, EN, DE):');
+while (locale !== 'RU' && locale !== 'EN' && locale !== 'DE') {
+  alert('Ошибка ввода!');
+  locale = prompt('Введите локаль (RU, EN, DE):');
+}
+
+getCitiesData('db_cities.json', locale)
   .then(data => {
     const allCities = getAllCities(data);
 
