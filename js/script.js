@@ -28,6 +28,33 @@ const animate = ({ draw, duration }) => {
   });
 };
 
+const getCookie = name => {
+  const matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + "=([^;]*)"));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+};
+
+const setCookie = (key, value, options = {}) => {
+  options = {
+    path: '/',
+    ...options
+  };
+
+  if (options.expires instanceof Date) {
+    options.expires = options.expires.toUTCString()
+  }
+
+  let cookie = encodeURIComponent(key) + '=' + encodeURIComponent(value);
+
+  for (let optionKey in options) {
+    cookie += '; ' + optionKey;
+    if (options[optionKey] !== true) {
+      cookie += '=' + options[optionKey];
+    }
+  }
+
+  document.cookie = cookie;
+}
+
 const sortByCount = cities => cities.sort((a, b) => b.count - a.count);
 
 const getTop3Cities = cities => {
@@ -167,13 +194,24 @@ const unshiftHomeland = (data, locale) => {
 const getCitiesData = async (url, locale = 'RU') => {
   const dropdownPreloader = addPreloader(preloaderTemplate, dropdown);
 
-  const response = await fetch(url);
+  let localData;
 
-  if (!response.ok) throw new Error(response.status);
+  if (locale === localStorage.getItem('inputCitiesLocale')) {
+    localData = JSON.parse(localStorage.getItem('inputCitiesData'));
+  }
 
-  const data = await response.json();
+  if (!localData) {
+    const response = await fetch(url);
 
-  const localData = unshiftHomeland(data, locale);
+    if (!response.ok) throw new Error(response.status);
+
+    const data = await response.json();
+
+    localData = unshiftHomeland(data, locale);
+
+    localStorage.setItem('inputCitiesData', JSON.stringify(localData));
+    localStorage.setItem('inputCitiesLocale', locale);
+  }
 
   localData.forEach(country => {
     addCountryBlock(country, lineTemplate, defaultList.querySelector('.dropdown-lists__col'));
@@ -199,10 +237,16 @@ closeBtn.addEventListener('click', () => {
   autocompleteList.style.display = '';
 });
 
-let locale = prompt('Введите локаль (RU, EN, DE):');
-while (locale !== 'RU' && locale !== 'EN' && locale !== 'DE') {
-  alert('Ошибка ввода!');
+let locale = getCookie('inputCitiesLocale');
+
+if (!locale) {
   locale = prompt('Введите локаль (RU, EN, DE):');
+  while (locale !== 'RU' && locale !== 'EN' && locale !== 'DE') {
+    alert('Ошибка ввода!');
+    locale = prompt('Введите локаль (RU, EN, DE):');
+  }
+
+  setCookie('inputCitiesLocale', locale, {'max-age': 2592e6});
 }
 
 getCitiesData('db_cities.json', locale)
